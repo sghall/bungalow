@@ -1,0 +1,31 @@
+{
+  "name": "bungalow",
+  "version": "0.0.1",
+  "description": "THREE.js Controls",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sghall/bungalow.git"
+  },
+  "keywords": [
+    "THREE.js"
+  ],
+  "author": "Steven Hall",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sghall/bungalow/issues"
+  },
+  "homepage": "https://github.com/sghall/bungalow",
+  "dependencies": {
+    "three": "^0.71.0"
+  },
+  "devDependencies": {
+    "babel-core": "^5.2.16",
+    "es6-module-loader": "^0.16.6",
+    "systemjs": "^0.16.11",
+    "traceur": "0.0.89"
+  }
+}
