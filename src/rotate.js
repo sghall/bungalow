@@ -1,73 +1,64 @@
 import THREE from 'THREE';
 
-var currObjectRel = new THREE.Vector3();
-var currObjectDir = new THREE.Vector3();
-var currObjectLat = new THREE.Vector3();
-var currObjectUp  = new THREE.Vector3();
+var  _lastAxis = new THREE.Vector3();
+var  _lastAngle = 0;
 
-var movePos = new THREE.Vector3();
-var quaternion = new THREE.Quaternion();
-
-var axis = new THREE.Vector3();
-var lastAxis = new THREE.Vector3();
-var lastAngle = 0;
-
-var rotationFactor = 0.2;
 var rotateSpeed = 1.0;
+var dynamicDampingFactor = 0.2;
 
-var angle;
 
-export function rotater (object, target) {
+var axis = new THREE.Vector3(),
+  quaternion = new THREE.Quaternion(),
+  eyeDirection = new THREE.Vector3(),
+  objectUpDirection = new THREE.Vector3(),
+  objectSidewaysDirection = new THREE.Vector3(),
+  moveDirection = new THREE.Vector3(),
+  angle;
+
+export function rotater (camera, target) {
 
   target = target || new THREE.Vector3();
 
-  return function (curr, prev) {
+  return function (_moveCurr, _movePrev, _eye) {
 
-    movePos.set(curr.x - prev.x, curr.y - prev.y, 0);
-    angle = movePos.length();
+    moveDirection.set( _moveCurr.x - _movePrev.x, _moveCurr.y - _movePrev.y, 0 );
+    angle = moveDirection.length();
 
-    if (angle) {
+    if ( angle ) {
 
-      currObjectRel
-        .copy(object.position).sub(target);
+      _eye.copy( camera.position ).sub( target );
+      // console.log(_eye)
+      eyeDirection.copy( _eye ).normalize();
+      objectUpDirection.copy( camera.up ).normalize();
+      objectSidewaysDirection.crossVectors( objectUpDirection, eyeDirection ).normalize();
 
-      currObjectDir
-        .copy(currObjectRel).normalize();
+      objectUpDirection.setLength( _moveCurr.y - _movePrev.y );
+      objectSidewaysDirection.setLength( _moveCurr.x - _movePrev.x );
 
-      currObjectUp
-        .copy(object.up).normalize();
+      moveDirection.copy( objectUpDirection.add( objectSidewaysDirection ) );
 
-      currObjectLat
-        .crossVectors(currObjectUp, currObjectDir).normalize();
-
-      let dir = currObjectDir.setLength(curr.y - prev.y);
-      let lat = currObjectLat.setLength(curr.x - prev.x);
-
-      movePos.copy(dir.add(lat));
-
-      axis.crossVectors(movePos, currObjectRel).normalize();
+      axis.crossVectors( moveDirection, _eye ).normalize();
 
       angle *= rotateSpeed;
+      quaternion.setFromAxisAngle( axis, angle );
 
-      quaternion
-        .setFromAxisAngle(axis, angle);
+      _eye.applyQuaternion( quaternion );
 
-      lastAxis.copy(axis);
-      lastAngle = angle;
+      _lastAxis.copy( axis );
+      _lastAngle = angle;
 
-      return quaternion;
-
-    } else if (lastAngle) {
-
-      lastAngle *= Math.sqrt(1.0 - rotationFactor);
-
-      quaternion
-        .setFromAxisAngle(lastAxis, lastAngle);
-
-      return quaternion;
     }
 
-    return null;
-  };
+    else if (_lastAngle ) {
+
+      _lastAngle *= Math.sqrt( 1.0 - dynamicDampingFactor );
+      _eye.copy( camera.position ).sub( target );
+      quaternion.setFromAxisAngle( _lastAxis, _lastAngle );
+      _eye.applyQuaternion( quaternion );
+
+    }
+
+    _movePrev.copy( _moveCurr );
+  }
 }
 

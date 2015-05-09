@@ -10,9 +10,9 @@ scene.add(mesh);
 var moveCamera = createControl(camera);
 
 function animate() {
+  moveCamera();
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
-  moveCamera();
 }
 
 animate();

@@ -17,23 +17,26 @@ export function createControl(camera) {
 
   return function() {
 
-    let quaternion = rotate(curr, prev);
+    source.subVectors(camera.position, target);
+
+    let quaternion = rotate(curr, prev, source);
     let zoomFactor = zoom();
 
-    if (quaternion) {
-      source
-        .copy(camera.position).sub(target)
-        .applyQuaternion(quaternion)
-        .multiplyScalar(zoomFactor);
+    // if (quaternion) {
+    //   source
+    //     .copy(camera.position).sub(target)
+    //     .applyQuaternion(quaternion)
+    //     .multiplyScalar(zoomFactor);
+    //   // console.log(quaternion)
+    //   camera.up
+    //     .applyQuaternion(quaternion);
 
-      camera.up
-        .applyQuaternion(quaternion);
-
-    } else {
-      source
-        .copy(camera.position).sub(target)
-        .multiplyScalar(zoomFactor);
-    }
+    // } else {
+    //   source
+    //     .copy(camera.position).sub(target)
+    //     .multiplyScalar(zoomFactor);
+    // }
+    // console.log(source)
 
     camera.position.addVectors(target, source);
     camera.lookAt(target);
