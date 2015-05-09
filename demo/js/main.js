@@ -9,9 +9,9 @@ var resize = getResizeHandler(document, screen);
 
 resize();
 
-export var source = new THREE.Vector3();
-export var target = new THREE.Vector3();
-export var dynamicDampingFactor = 0.2;
+// export var source = new THREE.Vector3();
+// export var target = new THREE.Vector3();
+// export var dynamicDampingFactor = 0.2;
 
 var EPS = 0.000001;
 var lastPosition = new THREE.Vector3();
@@ -57,15 +57,16 @@ var getMouseOnCircle = (function () {
 
 }());
 
+var target = new THREE.Vector3();
+window.source = new THREE.Vector3();
 var rotate = rotater(camera);
-var source = new THREE.Vector3();
 
 function update() {
-  // source.subVectors(camera.position, target);
 
   var quaternion = rotate(curr, prev);
 
   source
+    .copy(camera.position).sub(target)
     .applyQuaternion(quaternion);
 
   camera.up
@@ -89,11 +90,11 @@ document.addEventListener('mousedown', mousedown, false);
 document.addEventListener('mousewheel', mousewheel, false);
 document.addEventListener('DOMMouseScroll', mousewheel, false); // firefox
 
-// update();
+update();
 
 function animate() {
   requestAnimationFrame(animate);
-  // update();
+  update();
 }
 
 function render() {

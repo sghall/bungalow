@@ -52,12 +52,6 @@ export function rotater (object, target) {
       quaternion
         .setFromAxisAngle(axis, angle);
 
-      // currObjectRel
-      //   .applyQuaternion(quaternion);
-
-      // object.up
-      //   .applyQuaternion(quaternion);
-
       lastAxis.copy(axis);
       lastAngle = angle;
 
@@ -67,13 +61,9 @@ export function rotater (object, target) {
 
       quaternion
         .setFromAxisAngle(lastAxis, lastAngle);
+
     }
 
-    // currObjectRel
-    //   .applyQuaternion(quaternion);
-
-    // object.up
-    //   .applyQuaternion(quaternion);
     return quaternion;
   };
 }
