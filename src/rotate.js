@@ -26,10 +26,10 @@ export function rotater (object, target) {
     movePos.set(curr.x - prev.x, curr.y - prev.y, 0);
     angle = movePos.length();
 
-    currObjectRel
-      .copy(object.position).sub(target);
-
     if (angle) {
+
+      currObjectRel
+        .copy(object.position).sub(target);
 
       currObjectDir
         .copy(currObjectRel).normalize();
@@ -55,6 +55,8 @@ export function rotater (object, target) {
       lastAxis.copy(axis);
       lastAngle = angle;
 
+      return quaternion;
+
     } else if (lastAngle) {
 
       lastAngle *= Math.sqrt(1.0 - rotationFactor);
@@ -62,9 +64,10 @@ export function rotater (object, target) {
       quaternion
         .setFromAxisAngle(lastAxis, lastAngle);
 
+      return quaternion;
     }
 
-    return quaternion;
+    return null;
   };
 }
 

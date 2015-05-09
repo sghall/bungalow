@@ -9,10 +9,6 @@ var resize = getResizeHandler(document, screen);
 
 resize();
 
-// export var source = new THREE.Vector3();
-// export var target = new THREE.Vector3();
-// export var dynamicDampingFactor = 0.2;
-
 var EPS = 0.000001;
 var lastPosition = new THREE.Vector3();
 
@@ -58,19 +54,27 @@ var getMouseOnCircle = (function () {
 }());
 
 var target = new THREE.Vector3();
-window.source = new THREE.Vector3();
+var source = new THREE.Vector3();
 var rotate = rotater(camera);
 
 function update() {
 
   var quaternion = rotate(curr, prev);
+  var zoomFactor = zoom();
 
-  source
-    .copy(camera.position).sub(target)
-    .applyQuaternion(quaternion);
+  if (quaternion) {
+    source
+      .copy(camera.position).sub(target)
+      .applyQuaternion(quaternion)
+      .multiplyScalar(zoomFactor);
 
-  camera.up
-    .applyQuaternion(quaternion);
+    camera.up
+      .applyQuaternion(quaternion);
+  } else {
+    source
+      .copy(camera.position).sub(target)
+      .multiplyScalar(zoomFactor);
+  }
 
   camera.position.addVectors(target, source);
   camera.lookAt(target);
@@ -78,7 +82,6 @@ function update() {
   if (lastPosition.distanceToSquared(camera.position) > EPS) {
     lastPosition.copy(camera.position);
   }
-  render();
 };
 
 var geometry = new THREE.BoxGeometry(400, 400, 400);
@@ -90,16 +93,10 @@ document.addEventListener('mousedown', mousedown, false);
 document.addEventListener('mousewheel', mousewheel, false);
 document.addEventListener('DOMMouseScroll', mousewheel, false); // firefox
 
-update();
-
 function animate() {
   requestAnimationFrame(animate);
+  renderer.render(scene, camera);
   update();
 }
 
-function render() {
-  renderer.render(scene, camera);
-}
-
-render();
 animate();
