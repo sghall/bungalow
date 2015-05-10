@@ -1,80 +1,80 @@
 import THREE from 'THREE';
 
-var rotateSpeed = 1.0;
-var dynamicDampingFactor = 0.2;
+export class Rotate {
+  constructor(camera, target) {
+    this.rotateSpeed = 1.0;
+    this.dynamicDampingFactor = 0.2;
 
-var axis = new THREE.Vector3();
-var lastAxis = new THREE.Vector3();
-var lastAngle = 0;
+    this.axis = new THREE.Vector3();
+    this.lastAxis = new THREE.Vector3();
 
-var quaternion = new THREE.Quaternion();
+    this.angle = null;
+    this.lastAngle = 0;
 
-var eye = new THREE.Vector3();
-var eyeDirection = new THREE.Vector3();
+    this.quaternion = new THREE.Quaternion();
 
-var cameraUpDirection = new THREE.Vector3();
-var cameraSidewaysDirection = new THREE.Vector3();
+    this.eye = new THREE.Vector3();
+    this.eyeDirection = new THREE.Vector3();
 
-var moveDirection = new THREE.Vector3();
+    this.cameraUpDirection = new THREE.Vector3();
+    this.cameraSidewaysDirection = new THREE.Vector3();
 
-var angle;
+    this.moveDirection = new THREE.Vector3();
 
-export function rotater (camera, target) {
+    this.camera = camera;
+    this.target = target || new THREE.Vector3();
+  }
+  update(moveCurr, movePrev) {
 
-  target = target || new THREE.Vector3();
+    this.moveDirection.set(moveCurr.x - movePrev.x, moveCurr.y - movePrev.y, 0);
+    this.angle = this.moveDirection.length();
 
-  return function (moveCurr, movePrev) {
+    if (this.angle) {
 
-    moveDirection.set(moveCurr.x - movePrev.x, moveCurr.y - movePrev.y, 0);
-    angle = moveDirection.length();
+      this.eye.copy(this.camera.position).sub(this.target);
 
-    if (angle) {
+      this.eyeDirection.copy(this.eye).normalize();
 
-      eye.copy(camera.position).sub(target);
+      this.cameraUpDirection.copy(this.camera.up).normalize();
 
-      eyeDirection.copy(eye).normalize();
-
-      cameraUpDirection.copy(camera.up).normalize();
-
-      cameraSidewaysDirection
-        .crossVectors(cameraUpDirection, eyeDirection)
+      this.cameraSidewaysDirection
+        .crossVectors(this.cameraUpDirection, this.eyeDirection)
         .normalize();
 
-      cameraUpDirection
+      this.cameraUpDirection
         .setLength(moveCurr.y - movePrev.y);
 
-      cameraSidewaysDirection
+      this.cameraSidewaysDirection
         .setLength(moveCurr.x - movePrev.x);
 
-      moveDirection
-        .copy(cameraUpDirection.add(cameraSidewaysDirection));
+      this.moveDirection
+        .copy(this.cameraUpDirection.add(this.cameraSidewaysDirection));
 
-      axis
-        .crossVectors(moveDirection, eye)
+      this.axis
+        .crossVectors(this.moveDirection, this.eye)
         .normalize();
 
-      angle *= rotateSpeed;
+      this.angle *= this.rotateSpeed;
 
-      quaternion
-        .setFromAxisAngle(axis, angle);
+      this.quaternion
+        .setFromAxisAngle(this.axis, this.angle);
 
-      lastAxis.copy(axis);
-      lastAngle = angle;
+      this.lastAxis.copy(this.axis);
+      this.lastAngle = this.angle;
 
-      return quaternion;
+      return this.quaternion;
     }
 
-    else if (lastAngle) {
+    else if (this.lastAngle) {
 
-      lastAngle *= Math.sqrt(1.0 - dynamicDampingFactor);
+      this.lastAngle *= Math.sqrt(1.0 - this.dynamicDampingFactor);
       
-      quaternion
-        .setFromAxisAngle(lastAxis, lastAngle);
+      this.quaternion
+        .setFromAxisAngle(this.lastAxis, this.lastAngle);
 
-      return quaternion;
+      return this.quaternion;
     }
 
     return null;
   }
 }
-
