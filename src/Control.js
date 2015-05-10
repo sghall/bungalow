@@ -5,14 +5,11 @@ import { Zoom } from './Zoom';
 export class Control {
   constructor (camera, domElement) {
     this.camera = camera;
-    this.rotate = new Rotate(camera);
+    this.rotate = new Rotate(camera, domElement);
     this.zoom = new Zoom(domElement);
 
     this.target = new THREE.Vector3();
     this.source = new THREE.Vector3();
-
-    document.addEventListener('mousewheel', this.zoom.mousewheel.bind(this.zoom), false);
-    document.addEventListener('DOMMouseScroll', this.zoom.mousewheel.bind(this.zoom), false);
   }
 
   update() {

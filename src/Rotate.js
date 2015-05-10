@@ -41,8 +41,29 @@ function mouseup(event) {
   document.removeEventListener('mouseup', mouseup);
 }
 
+function touchstart(event) {
+  if (event.touches.length === 1) {
+    currMouse.copy(getMouseOnCircle(event.touches[0].pageX, event.touches[0].pageY));
+    prevMouse.copy(currMouse);
+  }
+}
+
+function touchmove(event) {
+  if (event.touches.length === 1) {
+    prevMouse.copy(currMouse);
+    currMouse.copy(getMouseOnCircle(event.touches[0].pageX, event.touches[0].pageY));
+  }
+}
+
+function touchend(event) {
+  if (event.touches.length === 1) {
+    prevMouse.copy(currMouse);
+    currMouse.copy(getMouseOnCircle(event.touches[0].pageX, event.touches[0].pageY));
+  }
+}
+
 export class Rotate {
-  constructor(camera, target) {
+  constructor(camera, domElement, target) {
     this.rotateSpeed = 1.0;
     this.dynamicDampingFactor = 0.2;
 
@@ -64,6 +85,12 @@ export class Rotate {
 
     this.camera = camera;
     this.target = target || new THREE.Vector3();
+
+    this.domElement = domElement;
+
+    this.domElement.addEventListener('touchstart', touchstart, false);
+    this.domElement.addEventListener('touchend', touchend, false);
+    this.domElement.addEventListener('touchmove', touchmove, false);
 
     document.addEventListener('mousedown', mousedown, false);
   }

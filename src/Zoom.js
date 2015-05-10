@@ -17,10 +17,12 @@ export class Zoom {
     this.domElement.addEventListener('touchstart', this.touchstart.bind(this), false);
     this.domElement.addEventListener('touchend', this.touchend.bind(this), false);
     this.domElement.addEventListener('touchmove', this.touchmove.bind(this), false);
+
+    document.addEventListener('mousewheel', this.mousewheel.bind(this), false);
+    document.addEventListener('DOMMouseScroll', this.mousewheel.bind(this), false);
   }
 
   update() {
-
     let factor = 1.0 + (this.zoomEnd.y - this.zoomStart.y) * this.zoomSpeed;
 
     if (factor !== 1.0 && factor > 0.0) {
@@ -31,7 +33,6 @@ export class Zoom {
   }
 
   touchstart(event) {
-
     if (event.touches.length === 2) {
       let dx = event.touches[0].pageX - event.touches[1].pageX;
       let dy = event.touches[0].pageY - event.touches[1].pageY;
@@ -40,7 +41,6 @@ export class Zoom {
   }
 
   touchmove(event) {
-
     if (event.touches.length === 2) {
       let dx = event.touches[0].pageX - event.touches[1].pageX;
       let dy = event.touches[0].pageY - event.touches[1].pageY;
@@ -49,7 +49,6 @@ export class Zoom {
   }
 
   touchend(event) {
-
     if (event.touches.length === 2) {
       this.touchZoomDistanceStart = this.touchZoomDistanceEnd = 0;
     }
