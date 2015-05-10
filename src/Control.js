@@ -5,7 +5,7 @@ import { Zoom } from './Zoom';
 export class Control {
   constructor (camera, domElement) {
     this.camera = camera;
-    this.rotate = new Rotate(camera, domElement);
+    this.rotation = new Rotate(camera, domElement);
     this.zoom = new Zoom(domElement);
 
     this.target = new THREE.Vector3();
@@ -14,24 +14,22 @@ export class Control {
 
   update() {
 
-    let zoomFactor = this.zoom.update();
-
-    if (this.rotate.hasChanged) {
+    if (this.rotation.hasChanged) {
 
       this.source.subVectors(this.camera.position, this.target);
 
-      let quaternion = this.rotate.getQuaternion();
+      let quaternion = this.rotation.getQuaternion();
 
       if (quaternion) {
         this.source
           .copy(this.camera.position).sub(this.target)
           .applyQuaternion(quaternion)
-          .multiplyScalar(zoomFactor);
+          .multiplyScalar(this.zoom.factor);
 
       } else {
         this.source
           .copy(this.camera.position).sub(this.target)
-          .multiplyScalar(zoomFactor);
+          .multiplyScalar(this.zoom.factor);
       }
 
       this.camera.position.addVectors(this.target, this.source);
@@ -40,7 +38,7 @@ export class Control {
     } else {
       this.source
         .copy(this.camera.position).sub(this.target)
-        .multiplyScalar(zoomFactor);
+        .multiplyScalar(this.zoom.factor);
 
       this.camera.position.addVectors(this.target, this.source);
       this.camera.lookAt(this.target);

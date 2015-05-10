@@ -22,7 +22,7 @@ export class Zoom {
     document.addEventListener('DOMMouseScroll', this.mousewheel.bind(this), false);
   }
 
-  update() {
+  get factor() {
     let factor = 1.0 + (this.zoomEnd.y - this.zoomStart.y) * this.zoomSpeed;
 
     if (factor !== 1.0 && factor > 0.0) {
