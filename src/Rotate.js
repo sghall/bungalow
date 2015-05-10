@@ -1,5 +1,46 @@
 import THREE from 'THREE';
 
+var currMouse = new THREE.Vector2();
+var prevMouse = new THREE.Vector2();
+
+var width  = window.innerWidth;
+var height = window.innerHeight;
+
+var mouse = new THREE.Vector2();
+
+function getMouseOnCircle(pageX, pageY) {
+  let x = (pageX - width * 0.5) / (width * 0.5);
+  let y = (height + 2 * -pageY) / width;
+
+  return mouse.set(x, y);
+}
+
+function mousedown(event) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  currMouse.copy(getMouseOnCircle(event.pageX, event.pageY));
+  prevMouse.copy(currMouse);
+
+  document.addEventListener('mousemove', mousemove, false);
+  document.addEventListener('mouseup', mouseup, false);
+}
+
+function mousemove(event) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  prevMouse.copy(currMouse);
+  currMouse.copy(getMouseOnCircle(event.pageX, event.pageY));
+}
+
+function mouseup(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  document.removeEventListener('mousemove', mousemove);
+  document.removeEventListener('mouseup', mouseup);
+}
+
 export class Rotate {
   constructor(camera, target) {
     this.rotateSpeed = 1.0;
@@ -23,10 +64,17 @@ export class Rotate {
 
     this.camera = camera;
     this.target = target || new THREE.Vector3();
-  }
-  update(moveCurr, movePrev) {
 
-    this.moveDirection.set(moveCurr.x - movePrev.x, moveCurr.y - movePrev.y, 0);
+    document.addEventListener('mousedown', mousedown, false);
+  }
+
+  get hasChanged() {
+    return !currMouse.equals(prevMouse);
+  }
+
+  getQuaternion() {
+
+    this.moveDirection.set(currMouse.x - prevMouse.x, currMouse.y - prevMouse.y, 0);
     this.angle = this.moveDirection.length();
 
     if (this.angle) {
@@ -42,10 +90,10 @@ export class Rotate {
         .normalize();
 
       this.cameraUpDirection
-        .setLength(moveCurr.y - movePrev.y);
+        .setLength(currMouse.y - prevMouse.y);
 
       this.cameraSidewaysDirection
-        .setLength(moveCurr.x - movePrev.x);
+        .setLength(currMouse.x - prevMouse.x);
 
       this.moveDirection
         .copy(this.cameraUpDirection.add(this.cameraSidewaysDirection));
@@ -61,6 +109,8 @@ export class Rotate {
 
       this.lastAxis.copy(this.axis);
       this.lastAngle = this.angle;
+      
+      prevMouse.copy(currMouse);
 
       return this.quaternion;
     }
@@ -71,9 +121,13 @@ export class Rotate {
       
       this.quaternion
         .setFromAxisAngle(this.lastAxis, this.lastAngle);
+      
+      prevMouse.copy(currMouse);
 
       return this.quaternion;
     }
+
+    prevMouse.copy(currMouse);
 
     return null;
   }
