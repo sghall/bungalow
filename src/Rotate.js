@@ -1,71 +1,10 @@
 import THREE from 'THREE';
-
-var currMouse = new THREE.Vector2();
-var prevMouse = new THREE.Vector2();
-
-var width  = window.innerWidth;
-var height = window.innerHeight;
-
-var mouse = new THREE.Vector2();
-
-function getMouseOnCircle(pageX, pageY) {
-  let x = (pageX - width * 0.5) / (width * 0.5);
-  let y = (height + 2 * -pageY) / width;
-
-  return mouse.set(x, y);
-}
-
-function mousedown(event) {
-  event.preventDefault();
-  event.stopPropagation();
-
-  currMouse.copy(getMouseOnCircle(event.pageX, event.pageY));
-  prevMouse.copy(currMouse);
-
-  document.addEventListener('mousemove', mousemove, false);
-  document.addEventListener('mouseup', mouseup, false);
-}
-
-function mousemove(event) {
-  event.preventDefault();
-  event.stopPropagation();
-
-  prevMouse.copy(currMouse);
-  currMouse.copy(getMouseOnCircle(event.pageX, event.pageY));
-}
-
-function mouseup(event) {
-  event.preventDefault();
-  event.stopPropagation();
-  document.removeEventListener('mousemove', mousemove);
-  document.removeEventListener('mouseup', mouseup);
-}
-
-function touchstart(event) {
-  if (event.touches.length === 1) {
-    currMouse.copy(getMouseOnCircle(event.touches[0].pageX, event.touches[0].pageY));
-    prevMouse.copy(currMouse);
-  }
-}
-
-function touchmove(event) {
-  if (event.touches.length === 1) {
-    prevMouse.copy(currMouse);
-    currMouse.copy(getMouseOnCircle(event.touches[0].pageX, event.touches[0].pageY));
-  }
-}
-
-function touchend(event) {
-  if (event.touches.length === 1) {
-    prevMouse.copy(currMouse);
-    currMouse.copy(getMouseOnCircle(event.touches[0].pageX, event.touches[0].pageY));
-  }
-}
+import { currMouse, prevMouse } from './Events';
 
 export class Rotate {
   constructor(camera, domElement, target) {
-    this.rotateSpeed = 1.0;
-    this.dynamicDampingFactor = 0.2;
+    this.rotateSpeed = 1.5;
+    this.dynamicDampingFactor = 0.5;
 
     this.axis = new THREE.Vector3();
     this.lastAxis = new THREE.Vector3();
@@ -73,7 +12,7 @@ export class Rotate {
     this.angle = null;
     this.lastAngle = 0;
 
-    this.quaternion = new THREE.Quaternion();
+    this._quaternion = new THREE.Quaternion();
 
     this.eye = new THREE.Vector3();
     this.eyeDirection = new THREE.Vector3();
@@ -85,21 +24,13 @@ export class Rotate {
 
     this.camera = camera;
     this.target = target || new THREE.Vector3();
-
-    this.domElement = domElement;
-
-    this.domElement.addEventListener('touchstart', touchstart, false);
-    this.domElement.addEventListener('touchend', touchend, false);
-    this.domElement.addEventListener('touchmove', touchmove, false);
-
-    document.addEventListener('mousedown', mousedown, false);
   }
 
   get hasChanged() {
     return !currMouse.equals(prevMouse);
   }
 
-  getQuaternion() {
+  get quaternion() {
 
     this.moveDirection.set(currMouse.x - prevMouse.x, currMouse.y - prevMouse.y, 0);
     this.angle = this.moveDirection.length();
@@ -131,7 +62,7 @@ export class Rotate {
 
       this.angle *= this.rotateSpeed;
 
-      this.quaternion
+      this._quaternion
         .setFromAxisAngle(this.axis, this.angle);
 
       this.lastAxis.copy(this.axis);
@@ -139,19 +70,19 @@ export class Rotate {
       
       prevMouse.copy(currMouse);
 
-      return this.quaternion;
+      return this._quaternion;
     }
 
     else if (this.lastAngle) {
 
       this.lastAngle *= Math.sqrt(1.0 - this.dynamicDampingFactor);
       
-      this.quaternion
+      this._quaternion
         .setFromAxisAngle(this.lastAxis, this.lastAngle);
       
       prevMouse.copy(currMouse);
 
-      return this.quaternion;
+      return this._quaternion;
     }
 
     prevMouse.copy(currMouse);

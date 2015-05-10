@@ -7,10 +7,10 @@ export class Zoom {
     this.zoomFactor = 0.2;
 
     this.zoomStart = new THREE.Vector2();
-    this.zoomEnd   = new THREE.Vector2();
+    this.zoomEnd = new THREE.Vector2();
 
     this.touchZoomDistanceStart = 0;
-    this.touchZoomDistanceEnd   = 0;
+    this.touchZoomDistanceEnd = 0;
 
     this.zoomSpeed = 1.2;
 
@@ -58,7 +58,7 @@ export class Zoom {
     event.preventDefault();
     event.stopPropagation();
 
-    var delta = 0;
+    let delta = 0;
 
     if (event.wheelDelta) {
       delta = event.wheelDelta / 40;
@@ -67,4 +67,5 @@ export class Zoom {
     }
     this.zoomStart.y += delta * 0.01;
   }
+
 }
