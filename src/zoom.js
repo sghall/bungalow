@@ -1,53 +1,71 @@
 import THREE from 'THREE';
 
-var source = new THREE.Vector3();
-var zoomFactor = 0.2;
+export class Zoom {
 
-var zoomStart = new THREE.Vector2();
-var zoomEnd   = new THREE.Vector2();
+  constructor(domElement) {
+    this.domElement = domElement;
+    this.zoomFactor = 0.2;
 
-var touchZoomDistanceStart = 0;
-var touchZoomDistanceEnd   = 0;
+    this.zoomStart = new THREE.Vector2();
+    this.zoomEnd   = new THREE.Vector2();
 
-var zoomSpeed = 1.2;
+    this.touchZoomDistanceStart = 0;
+    this.touchZoomDistanceEnd   = 0;
 
-export function zoom() {
+    this.zoomSpeed = 1.2;
 
-	var factor;
-	var active = false;
-
-	if (active) {
-
-		factor = touchZoomDistanceStart / touchZoomDistanceEnd;
-		touchZoomDistanceStart = touchZoomDistanceEnd;
-
-	} else {
-		factor = 1.0 + (zoomEnd.y - zoomStart.y) * zoomSpeed;
-
-		if (factor !== 1.0 && factor > 0.0) {
-			zoomStart.y += (zoomEnd.y - zoomStart.y) * zoomFactor;
-		}
-
-	}
-
-  return factor;
-}
-
-export function mousewheel(event) {
-  event.preventDefault();
-  event.stopPropagation();
-
-  var delta = 0;
-
-  if (event.wheelDelta) { // WebKit / Opera / Explorer 9
-
-    delta = event.wheelDelta / 40;
-
-  } else if (event.detail) { // Firefox
-
-    delta = -event.detail / 3;
-
+    this.domElement.addEventListener('touchstart', this.touchstart.bind(this), false);
+    this.domElement.addEventListener('touchend', this.touchend.bind(this), false);
+    this.domElement.addEventListener('touchmove', this.touchmove.bind(this), false);
   }
 
-  zoomStart.y += delta * 0.01;
+  update() {
+
+    let factor = 1.0 + (this.zoomEnd.y - this.zoomStart.y) * this.zoomSpeed;
+
+    if (factor !== 1.0 && factor > 0.0) {
+      this.zoomStart.y += (this.zoomEnd.y - this.zoomStart.y) * this.zoomFactor;
+    }
+
+    return factor;
+  }
+
+  touchstart(event) {
+
+    if (event.touches.length === 2) {
+      let dx = event.touches[0].pageX - event.touches[1].pageX;
+      let dy = event.touches[0].pageY - event.touches[1].pageY;
+      this.touchZoomDistanceEnd = this.touchZoomDistanceStart = Math.sqrt(dx * dx + dy * dy);
+    }
+  }
+
+  touchmove(event) {
+
+    if (event.touches.length === 2) {
+      let dx = event.touches[0].pageX - event.touches[1].pageX;
+      let dy = event.touches[0].pageY - event.touches[1].pageY;
+      this.touchZoomDistanceEnd = Math.sqrt(dx * dx + dy * dy);
+    }
+  }
+
+  touchend(event) {
+
+    if (event.touches.length === 2) {
+      this.touchZoomDistanceStart = this.touchZoomDistanceEnd = 0;
+    }
+  }
+
+  mousewheel(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    var delta = 0;
+
+    if (event.wheelDelta) {
+      delta = event.wheelDelta / 40;
+    } else if (event.detail) {
+      delta = -event.detail / 3;
+    }
+    this.zoomStart.y += delta * 0.01;
+  }
 }

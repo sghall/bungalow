@@ -1,58 +1,67 @@
 import THREE from 'THREE';
 import { rotater } from './rotate';
-import { zoom, mousewheel } from './zoom';
+import { Zoom } from './zoom';
 import { getMouseOnCircle } from './mouse';
 
-var EPS = 0.000001;
-var lastPosition = new THREE.Vector3();
+var currMouse = new THREE.Vector2();
+var prevMouse = new THREE.Vector2();
 
-var prev = new THREE.Vector2();
-var curr = new THREE.Vector2();
+export class Control {
+  constructor (camera, domElement) {
+    this.camera = camera;
+    this.rotate = rotater(camera);
+    this.zoom = new Zoom(domElement);
 
-var target = new THREE.Vector3();
-var source = new THREE.Vector3();
+    this.target = new THREE.Vector3();
+    this.source = new THREE.Vector3();
 
-export function createControl(camera) {
-  let rotate = rotater(camera);
+    document.addEventListener('mousedown', mousedown, false);
+    document.addEventListener('mousewheel', this.zoom.mousewheel.bind(this.zoom), false);
+    document.addEventListener('DOMMouseScroll', this.zoom.mousewheel.bind(this.zoom), false);
+  }
 
-  return function() {
+  update() {
 
-    source.subVectors(camera.position, target);
+    let zoomFactor = this.zoom.update();
 
-    let quaternion = rotate(curr, prev, source);
-    let zoomFactor = zoom();
+    if (!currMouse.equals(prevMouse)) {
 
-    // if (quaternion) {
-    //   source
-    //     .copy(camera.position).sub(target)
-    //     .applyQuaternion(quaternion)
-    //     .multiplyScalar(zoomFactor);
-    //   // console.log(quaternion)
-    //   camera.up
-    //     .applyQuaternion(quaternion);
+      this.source.subVectors(this.camera.position, this.target);
 
-    // } else {
-    //   source
-    //     .copy(camera.position).sub(target)
-    //     .multiplyScalar(zoomFactor);
-    // }
-    // console.log(source)
+      let quaternion = this.rotate(currMouse, prevMouse);
 
-    camera.position.addVectors(target, source);
-    camera.lookAt(target);
+      if (quaternion) {
+        this.source
+          .copy(this.camera.position).sub(this.target)
+          .applyQuaternion(quaternion)
+          .multiplyScalar(zoomFactor);
 
-    if (lastPosition.distanceToSquared(camera.position) > EPS) {
-      lastPosition.copy(camera.position);
+      } else {
+        this.source
+          .copy(this.camera.position).sub(this.target)
+          .multiplyScalar(zoomFactor);
+      }
+
+      this.camera.position.addVectors(this.target, this.source);
+      this.camera.lookAt(this.target);
+      prevMouse.copy(currMouse);
+    } else {
+      this.source
+        .copy(this.camera.position).sub(this.target)
+        .multiplyScalar(zoomFactor);
+
+      this.camera.position.addVectors(this.target, this.source);
+      this.camera.lookAt(this.target);
     }
-  };
+  }
 }
 
 function mousedown(event) {
   event.preventDefault();
   event.stopPropagation();
 
-  curr.copy(getMouseOnCircle(event.pageX, event.pageY));
-  prev.copy(curr);
+  currMouse.copy(getMouseOnCircle(event.pageX, event.pageY));
+  prevMouse.copy(currMouse);
 
   document.addEventListener('mousemove', mousemove, false);
   document.addEventListener('mouseup', mouseup, false);
@@ -62,8 +71,8 @@ function mousemove(event) {
   event.preventDefault();
   event.stopPropagation();
 
-  prev.copy(curr);
-  curr.copy(getMouseOnCircle(event.pageX, event.pageY));
+  prevMouse.copy(currMouse);
+  currMouse.copy(getMouseOnCircle(event.pageX, event.pageY));
 }
 
 function mouseup(event) {
@@ -73,7 +82,5 @@ function mouseup(event) {
   document.removeEventListener('mouseup', mouseup);
 }
 
-document.addEventListener('mousedown', mousedown, false);
-document.addEventListener('mousewheel', mousewheel, false);
-document.addEventListener('DOMMouseScroll', mousewheel, false); // firefox
+
 
